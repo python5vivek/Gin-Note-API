@@ -6,9 +6,60 @@ import (
 	"net/http"
 	"strconv"
 
+	"crypto/rand"
+	"encoding/base64"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
+
+func GenerateRandomBytes(n int) ([]byte, error) {
+	b := make([]byte, n)
+	_, err := rand.Read(b)
+
+	if err != nil {
+		return nil, err
+	}
+	return b, nil
+}
+
+func GenerateRandomToken(n int) (string, error) {
+	bytes, err := GenerateRandomBytes(n)
+	if err != nil {
+		return "", err
+	}
+
+	return base64.URLEncoding.EncodeToString(bytes), nil
+}
+
+type Loginuser struct {
+	Username string
+	Password string
+}
+
+func SignUp(c *gin.Context) {
+	var user User
+	err := c.ShouldBindJSON(&user)
+	if err != nil {
+		c.JSON(400, gin.H{"Error": err.Error()})
+		return
+	}
+	db.Create(&user)
+	tokenStr, _ := GenerateRandomToken(64)
+	token := Token{UserId: user.ID, Token: tokenStr}
+	db.Create(token)
+	c.JSON(201, gin.H{"Token": token})
+}
+
+func Login(c *gin.Context) {
+	var luser Loginuser
+	err := c.ShouldBindJSON(luser)
+	if err != nil {
+		c.JSON(400, gin.H{"Error": err.Error()})
+		return
+	}
+
+}
 
 func GetNote(c *gin.Context) {
 	var notes []Note
@@ -66,7 +117,6 @@ func DeleteNote(c *gin.Context) {
 }
 
 func main() {
-
 	db = InitDB()
 	defer CloseDB(db)
 
@@ -80,6 +130,7 @@ func main() {
 	router.POST("/note", AddNote)
 	router.PUT("/note/:id", UpdateNote)
 	router.DELETE("/note/:id", DeleteNote)
+	router.POST("/signup", SignUp)
 
 	log.Println("Server running on http://localhost:8080")
 	router.Run(":8080")

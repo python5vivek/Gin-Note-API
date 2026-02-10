@@ -14,7 +14,7 @@ type Note struct {
 }
 
 type User struct {
-	ID        uint
+	ID        uint `gorm:"primaryKey"`
 	Username  string
 	Password  string
 	FirstName string
@@ -22,16 +22,20 @@ type User struct {
 }
 
 type UserToNote struct {
-	ID     uint
+	ID     uint `gorm:"primaryKey"`
 	UserId uint
 	NoteId uint
 }
 
-var DB *gorm.DB
+type Token struct {
+	ID     uint `gorm:"primaryKey"`
+	UserId uint
+	Token  string
+}
 
 func InitDB() *gorm.DB {
 	var err error
-	DB, err = gorm.Open(sqlite.Open("app.db"), &gorm.Config{})
+	DB, err := gorm.Open(sqlite.Open("app.db"), &gorm.Config{})
 	if err != nil {
 		log.Fatal("Failed to connect database:", err)
 	}
