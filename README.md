@@ -34,6 +34,3 @@ This repository contains the source code for a Note Saver API.
 
 ---
 
-## ℹ️ Notes
-
-Information regarding specific API endpoints, request/response formats, or deployment instructions is not available in the provided repository information.
